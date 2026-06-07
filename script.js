@@ -364,6 +364,13 @@ deleteNameBtn.addEventListener("click", async () => {
   const nextUsers = JSON.parse(JSON.stringify(users || {}));
 
   delete nextUsers[key];
+  Object.keys(nextUsers).forEach(userKey => {
+  const userName = normalizeName(nextUsers[userKey]?.name || "");
+
+  if (userName === nameToDelete) {
+    delete nextUsers[userKey];
+  }
+});
 
   await saveUsers(nextUsers);
 
