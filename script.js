@@ -347,6 +347,35 @@ clearMySlotsBtn.addEventListener("click", async () => {
   setStatus(`הסימונים של ${currentName} נמחקו לכולם.`);
 });
 
+deleteNameBtn.addEventListener("click", async () => {
+  if (!isReady) return;
+
+  const nameToDelete = normalizeName(nameInput.value);
+
+  if (!nameToDelete) {
+    setStatus("כתוב את השם שרוצים למחוק.");
+    return;
+  }
+
+  const ok = confirm(`למחוק לגמרי את ${nameToDelete} מכל הלוח?`);
+  if (!ok) return;
+
+  const key = userKey(nameToDelete);
+  const nextUsers = JSON.parse(JSON.stringify(users || {}));
+
+  delete nextUsers[key];
+
+  await saveUsers(nextUsers);
+
+  if (currentName === nameToDelete) {
+    currentName = "";
+    nameInput.value = "";
+    localStorage.removeItem("currentName");
+  }
+
+  setStatus(`${nameToDelete} נמחק מהרשימה.`);
+});
+
 resetAllBtn.addEventListener("click", async () => {
   if (!isReady) return;
   const ok = confirm("למחוק את כל הסימונים של כולם?");
