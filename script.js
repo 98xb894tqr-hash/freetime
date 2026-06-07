@@ -268,7 +268,7 @@ function renderSchedule() {
       cell.style.background = colorForCount(names.length, totalPeople);
       cell.title = names.length ? names.join(", ") : "אין סימונים";
       cell.innerHTML = `
-        <span class="count">${names.length ? `${names.length}/${people.length}` : ""}</span>
+        <span class="count">${names.length ? `${names.length}/${totalPeople}` : ""}</span>
         <span class="names">${names.join(", ")}</span>
       `;
       cell.addEventListener("mousedown", (event) => {
@@ -301,14 +301,14 @@ cell.addEventListener("mouseenter", () => {
 function renderBestSlots() {
   const entries = Object.entries(availability)
     .map(([id, names]) => ({ id, names, count: names.length }))
-    .filter(item => item.count > 0)
+    .filter(item => item.count > 2)
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
   bestSlotsEl.innerHTML = "";
 
   if (entries.length === 0) {
-    bestSlotsEl.textContent = "עוד אין סימונים.";
+    bestSlotsEl.textContent = "עוד אין חפיפות בין חברים.";
     return;
   }
 
