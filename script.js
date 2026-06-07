@@ -39,6 +39,9 @@ let currentName = localStorage.getItem("currentName") || "";
 let users = {};
 let availability = {};
 let isReady = false;
+let isDragging = false;
+let dragMode = null; // "add" or "remove"
+let draggedSlots = new Set();
 nameInput.value = currentName;
 
 function setStatus(text) {
@@ -192,6 +195,40 @@ function colorForCount(count, totalPeople) {
   return `hsl(134, 45%, ${lightness}%)`;
 }
 
+async function applyDragSlot(day, time) {
+  const id = slotId(day, time);
+
+  if (draggedSlots.has(id)) return;
+  draggedSlots.add(id);
+
+  const typedName = nameInput.value.trim();
+  if (!typedName) return;
+
+  currentName = typedName;
+  localStorage.setItem("currentName", currentName);
+
+  const nextAvailability = JSON.parse(JSON.stringify(availability));
+  const names = [...new Set(nextAvailability[id] || [])];
+
+  if (dragMode === "add") {
+    if (!names.includes(currentName)) {
+      nextAvailability[id] = [...names, currentName];
+    }
+  }
+
+  if (dragMode === "remove") {
+    const filtered = names.filter(name => name !== currentName);
+
+    if (filtered.length > 0) {
+      nextAvailability[id] = filtered;
+    } else {
+      delete nextAvailability[id];
+    }
+  }
+
+  await saveAvailability(nextAvailability);
+}
+
 function renderSchedule() {
   const times = buildTimes();
   const people = getAllNames();
@@ -233,7 +270,28 @@ function renderSchedule() {
         <span class="count">${names.length ? `${names.length}/${people.length}` : ""}</span>
         <span class="names">${names.join(", ")}</span>
       `;
-      cell.addEventListener("click", () => toggleSlot(day, time));
+      cell.addEventListener("mousedown", (event) => {
+  event.preventDefault();
+
+  if (!nameInput.value.trim()) {
+    setStatus("צריך לכתוב שם לפני שמסמנים שעות.");
+    return;
+  }
+
+  const activeName = nameInput.value.trim();
+  const alreadyMarked = names.includes(activeName);
+
+  isDragging = true;
+  dragMode = alreadyMarked ? "remove" : "add";
+  draggedSlots = new Set();
+
+  applyDragSlot(day, time);
+});
+
+cell.addEventListener("mouseenter", () => {
+  if (!isDragging) return;
+  applyDragSlot(day, time);
+});
       scheduleEl.appendChild(cell);
     });
   });
