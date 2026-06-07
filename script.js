@@ -5,7 +5,8 @@ import {
   onSnapshot,
   setDoc,
   updateDoc,
-  serverTimestamp
+  serverTimestamp,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -105,21 +106,38 @@ async function toggleSlot(day, time) {
   localStorage.setItem("currentName", currentName);
 
   const id = slotId(day, time);
-  const next = JSON.parse(JSON.stringify(availability));
-  const names = next[id] || [];
 
-  if (names.includes(currentName)) {
-    next[id] = names.filter(name => name !== currentName);
-    if (next[id].length === 0) {
-      delete next[id];
-    }
-    setStatus(`הסרת את עצמך מ-${day} ${time}`);
-  } else {
-    next[id] = [...names, currentName];
-    setStatus(`סימנת שאתה פנוי ב-${day} ${time}`);
+  try {
+    await runTransaction(db, async (transaction) => {
+      const snap = await transaction.get(roomRef);
+      const data = snap.exists() ? snap.data() : {};
+      const currentAvailability = data.availability || {};
+      const names = currentAvailability[id] || [];
+
+      const nextAvailability = JSON.parse(JSON.stringify(currentAvailability));
+
+      if (names.includes(currentName)) {
+        nextAvailability[id] = names.filter(name => name !== currentName);
+
+        if (nextAvailability[id].length === 0) {
+          delete nextAvailability[id];
+        }
+
+        setStatus(`הסרת את עצמך מ-${day} ${time}`);
+      } else {
+        nextAvailability[id] = [...names, currentName];
+        setStatus(`סימנת שאתה פנוי ב-${day} ${time}`);
+      }
+
+      transaction.set(roomRef, {
+        availability: nextAvailability,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    });
+  } catch (error) {
+    console.error(error);
+    setStatus("שגיאה בעדכון השעה.");
   }
-
-  await saveAvailability(next);
 }
 
 function getAllNames() {
