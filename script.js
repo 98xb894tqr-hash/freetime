@@ -105,7 +105,7 @@ async function toggleSlot(day, time) {
   localStorage.setItem("currentName", currentName);
 
   const id = slotId(day, time);
-  const next = structuredClone(availability);
+  const next = JSON.parse(JSON.stringify(availability));
   const names = next[id] || [];
 
   if (names.includes(currentName)) {
