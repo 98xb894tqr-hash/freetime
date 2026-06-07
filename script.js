@@ -113,22 +113,23 @@ async function toggleSlot(day, time) {
       const snap = await transaction.get(roomRef);
       const data = snap.exists() ? snap.data() : {};
       const currentAvailability = data.availability || {};
-
       const nextAvailability = JSON.parse(JSON.stringify(currentAvailability));
-      const names = [...new Set(nextAvailability[id] || [])];
 
-      if (names.includes(currentName)) {
-        const filtered = names.filter(name => name !== currentName);
+      const currentSlotNames = [...new Set(nextAvailability[id] || [])];
+      const alreadyMarked = currentSlotNames.includes(currentName);
 
-        if (filtered.length > 0) {
-          nextAvailability[id] = filtered;
-        } else {
+      if (alreadyMarked) {
+        const filtered = currentSlotNames.filter(name => name !== currentName);
+
+        if (filtered.length === 0) {
           delete nextAvailability[id];
+        } else {
+          nextAvailability[id] = filtered;
         }
 
         setStatus(`הסרת את עצמך מ-${day} ${time}`);
       } else {
-        nextAvailability[id] = [...names, currentName];
+        nextAvailability[id] = [...currentSlotNames, currentName];
         setStatus(`סימנת שאתה פנוי ב-${day} ${time}`);
       }
 
