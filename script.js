@@ -93,17 +93,30 @@ async function toggleSlot(day, time) {
     setStatus("עוד מתחבר למסד הנתונים...");
     return;
   }
-  if (!currentName && !saveCurrentName()) return;
+
+  const typedName = nameInput.value.trim();
+
+  if (!typedName) {
+    setStatus("צריך לכתוב שם לפני שמסמנים שעות.");
+    return;
+  }
+
+  currentName = typedName;
+  localStorage.setItem("currentName", currentName);
 
   const id = slotId(day, time);
   const next = structuredClone(availability);
-  if (!next[id]) next[id] = [];
+  const names = next[id] || [];
 
-  if (next[id].includes(currentName)) {
-    next[id] = next[id].filter(name => name !== currentName);
-    if (next[id].length === 0) delete next[id];
+  if (names.includes(currentName)) {
+    next[id] = names.filter(name => name !== currentName);
+    if (next[id].length === 0) {
+      delete next[id];
+    }
+    setStatus(`הסרת את עצמך מ-${day} ${time}`);
   } else {
-    next[id].push(currentName);
+    next[id] = [...names, currentName];
+    setStatus(`סימנת שאתה פנוי ב-${day} ${time}`);
   }
 
   await saveAvailability(next);
