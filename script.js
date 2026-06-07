@@ -103,6 +103,7 @@ async function toggleSlot(day, time) {
   }
 
   currentName = typedName;
+  nameInput.value = currentName;
   localStorage.setItem("currentName", currentName);
 
   const id = slotId(day, time);
@@ -112,17 +113,24 @@ async function toggleSlot(day, time) {
       const snap = await transaction.get(roomRef);
       const data = snap.exists() ? snap.data() : {};
       const currentAvailability = data.availability || {};
-      const names = [...new Set(next[id] || [])];
 
       const nextAvailability = JSON.parse(JSON.stringify(currentAvailability));
+      const names = [...new Set(nextAvailability[id] || [])];
 
       if (names.includes(currentName)) {
-  const filtered = names.filter(name => name !== currentName);
-  if (filtered.length > 0) {
-    next[id] = filtered;
-  } else {
-    delete next[id];
-  }
+        const filtered = names.filter(name => name !== currentName);
+
+        if (filtered.length > 0) {
+          nextAvailability[id] = filtered;
+        } else {
+          delete nextAvailability[id];
+        }
+
+        setStatus(`הסרת את עצמך מ-${day} ${time}`);
+      } else {
+        nextAvailability[id] = [...names, currentName];
+        setStatus(`סימנת שאתה פנוי ב-${day} ${time}`);
+      }
 
       transaction.set(roomRef, {
         availability: nextAvailability,
