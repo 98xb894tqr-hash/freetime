@@ -31,6 +31,7 @@ const scheduleEl = document.getElementById("schedule");
 const nameInput = document.getElementById("nameInput");
 const saveNameBtn = document.getElementById("saveNameBtn");
 const clearMySlotsBtn = document.getElementById("clearMySlotsBtn");
+const deleteNameBtn = document.getElementById("deleteNameBtn");
 const resetAllBtn = document.getElementById("resetAllBtn");
 const statusEl = document.getElementById("status");
 const bestSlotsEl = document.getElementById("bestSlots");
