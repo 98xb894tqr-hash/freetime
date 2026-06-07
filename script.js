@@ -201,32 +201,32 @@ async function applyDragSlot(day, time) {
   if (draggedSlots.has(id)) return;
   draggedSlots.add(id);
 
-  const typedName = nameInput.value.trim();
-  if (!typedName) return;
+  if (!saveCurrentName()) return;
 
-  currentName = typedName;
-  localStorage.setItem("currentName", currentName);
+  const key = userKey(currentName);
 
-  const nextAvailability = JSON.parse(JSON.stringify(availability));
-  const names = [...new Set(nextAvailability[id] || [])];
+  const nextUsers = JSON.parse(JSON.stringify(users || {}));
+
+  if (!nextUsers[key]) {
+    nextUsers[key] = {
+      name: currentName,
+      slots: []
+    };
+  }
+
+  const slotsSet = new Set(nextUsers[key].slots || []);
 
   if (dragMode === "add") {
-    if (!names.includes(currentName)) {
-      nextAvailability[id] = [...names, currentName];
-    }
+    slotsSet.add(id);
   }
 
   if (dragMode === "remove") {
-    const filtered = names.filter(name => name !== currentName);
-
-    if (filtered.length > 0) {
-      nextAvailability[id] = filtered;
-    } else {
-      delete nextAvailability[id];
-    }
+    slotsSet.delete(id);
   }
 
-  await saveAvailability(nextAvailability);
+  nextUsers[key].slots = Array.from(slotsSet);
+
+  await saveUsers(nextUsers);
 }
 
 function renderSchedule() {
@@ -393,4 +393,9 @@ onSnapshot(roomRef, async (snapshot) => {
 }, (error) => {
   console.error(error);
   setStatus("לא הצלחתי להתחבר ל-Firestore. ודא שיצרת Firestore Database במצב Test Mode.");
+});
+document.addEventListener("mouseup", () => {
+  isDragging = false;
+  dragMode = null;
+  draggedSlots = new Set();
 });
