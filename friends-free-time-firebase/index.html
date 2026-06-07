@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>לוז חברים שבועי</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <h1>לוז חברים שבועי</h1>
+      <p>כל אחד כותב שם ומסמן את השעות שבהן הוא פנוי. ככל שהמשבצת ירוקה יותר — יותר חברים פנויים.</p>
+      <div class="controls">
+        <label>
+          השם שלך
+          <input id="nameInput" type="text" placeholder="למשל: אור" autocomplete="name" />
+        </label>
+        <button id="saveNameBtn">שמור שם</button>
+        <button id="clearMySlotsBtn" class="secondary">נקה את הסימונים שלי</button>
+        <button id="resetAllBtn" class="danger">איפוס מלא לכולם</button>
+      </div>
+      <div id="status" class="status"></div>
+    </section>
+
+    <section class="summary">
+      <h2>הזמנים הכי טובים</h2>
+      <div id="bestSlots" class="best-slots"></div>
+    </section>
+
+    <section class="schedule-wrapper" aria-label="לוח שבועי">
+      <div id="schedule" class="schedule"></div>
+    </section>
+  </main>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
